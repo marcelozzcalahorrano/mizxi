@@ -3,7 +3,6 @@ name: Deploy Mizuki to GitHub Pages
 on:
   push:
     branches:
-      - claude/virtual-companion-mobile-offline-6y8qmv
       - main
   workflow_dispatch:
 
