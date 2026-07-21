@@ -98,4 +98,11 @@ html,body{margin:0;height:100%;overflow:hidden;background:#000;color:var(--text)
 .btn.wide{width:100%;padding:14px;border-radius:14px;background:var(--accent2);
   margin-top:12px;font-size:15px;font-weight:600}
 .btn.danger{background:rgba(255,80,80,.25);border:1px solid rgba(255,80,80,.5)}
+.ai-box{margin:18px 0;padding:14px;border:1px solid rgba(138,92,255,.4);
+  border-radius:14px;background:rgba(138,92,255,.08)}
+.ai-status{font-size:12px;opacity:.75;margin-top:10px;line-height:1.4}
+.ai-status.busy{color:#ffd36b;opacity:1}
+.ai-status.ok{color:#7ad36b;opacity:1}
+.ai-status.err{color:#ff7a7a;opacity:1}
+.thinking{opacity:.7;font-style:italic}
 .ver{text-align:center;opacity:.4;font-size:12px;margin-top:24px}

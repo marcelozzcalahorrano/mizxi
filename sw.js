@@ -1,11 +1,14 @@
-/* sw.js — Service Worker: cachea todo para funcionar OFFLINE. */
-const CACHE = 'mizuki-v1';
+/* sw.js — Service Worker: cachea todo para funcionar OFFLINE.
+   Nota: el Modo IA (WebLLM) se descarga desde su CDN y gestiona su propio
+   cache del modelo; por eso no lo incluimos aqui. */
+const CACHE = 'mizuki-v2';
 const ASSETS = [
   "./",
   "index.html",
   "css/style.css",
   "js/character.js",
   "js/personality.js",
+  "js/ai.js",
   "js/voice.js",
   "js/app.js",
   "manifest.webmanifest",
@@ -59,6 +62,9 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  // solo gestionamos peticiones de nuestro propio origen; la IA (CDN) pasa directo
+  if (url.origin !== location.origin) return;
   e.respondWith(
     caches.match(req).then(hit => hit || fetch(req).then(res => {
       const copy = res.clone();

@@ -113,6 +113,26 @@ de cada emoción; si no existe, la app hace un pulso suave igual.
 
 ---
 
+## 🧠 Su "cerebro" — dos modos
+
+Mizuki tiene **dos cerebros** y eliges cuál usar (⚙️ Ajustes):
+
+**1) Motor instantáneo (por defecto)** — offline, respuesta inmediata, no traba el
+teléfono. Ya **no repite frases**: tiene anti-repetición, memoria de contexto (recuerda
+de qué hablabas y lo retoma), decenas de temas (saludos, tu día, ánimo, mimos, celos,
+gustos, etc.) y preguntas de vuelta para mantener la charla. Es "guionado inteligente".
+
+**2) Modo IA (opcional)** — un **modelo de lenguaje real** corriendo *dentro* del
+navegador con **WebLLM + WebGPU**. Conversación genuina, con la personalidad de Mizuki.
+Actívalo en Ajustes → **🧠 Modo IA**. Ojo, es el modo "pesado":
+- Descarga el modelo **una vez** con internet (≈0.5–1.2 GB según el que elijas) y luego
+  queda cacheado para usarse **offline**.
+- Necesita **Chrome actualizado con WebGPU**.
+- En tu **Helio G99** puede tardar **varios segundos por respuesta** y calentar el equipo
+  (es el precio de una IA de verdad). Si va lento, elige el modelo **"Rápido"**.
+
+Puedes alternar entre ambos cuando quieras.
+
 ## 💬 Su personalidad
 
 El "cerebro" está en `js/personality.js`. **No es un LLM** (por eso responde al

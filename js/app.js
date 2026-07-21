@@ -36,10 +36,43 @@
     bubbleTimer = setTimeout(()=>bubble.classList.add('hidden'), dur);
   }
 
+  let aiEnabled = false, aiBusy = false;
+
   function handleUserText(txt){
     if (!txt || !txt.trim()) return;
+    // Modo IA: modelo real (async, con streaming en la burbuja)
+    if (aiEnabled && AI.isReady() && !aiBusy){
+      runAI(txt);
+      return;
+    }
+    // Motor instantáneo
     const res = Personality.reply(txt);
     present(res);
+  }
+
+  async function runAI(txt){
+    aiBusy = true;
+    bubble.classList.remove('hidden');
+    bubbleText.className = 'thinking';
+    bubbleText.textContent = 'Mizuki está pensando…';
+    Character.setEmotion('curious');
+    clearTimeout(bubbleTimer);
+    try{
+      const res = await AI.reply(txt, {
+        onToken(partial){
+          // mientras genera, mostramos el texto (sin la etiqueta [emo])
+          bubbleText.className = '';
+          bubbleText.textContent = partial.replace(/^\s*\[[a-z]+\]\s*/i, '');
+        }
+      });
+      bubbleText.className = '';
+      present(res);                 // fija sprite + burbuja final + voz
+    }catch(e){
+      // si falla la IA, caemos al motor instantáneo
+      present(Personality.reply(txt));
+    }finally{
+      aiBusy = false;
+    }
   }
 
   // ---- entrada de texto ----
@@ -102,6 +135,41 @@
 
   const pitch=$('#pitch'), rate=$('#rate'), pitchVal=$('#pitchVal'), rateVal=$('#rateVal');
   const voiceSelect=$('#voiceSelect'), autoListen=$('#autoListen'), ttsOn=$('#ttsOn');
+  const aiMode=$('#aiMode'), aiModel=$('#aiModel'), aiStatus=$('#aiStatus');
+
+  function setAiStatus(msg, cls){ aiStatus.textContent=msg; aiStatus.className='ai-status'+(cls?' '+cls:''); }
+
+  aiModel.value = AI.modelId && Object.keys(AI.models()).find(k=>AI.models()[k]===AI.modelId()) || 'equilibrado';
+  aiModel.addEventListener('change', ()=>{
+    AI.setModel(aiModel.value);
+    if (aiEnabled){ setAiStatus('Cambiaste de modelo. Reactiva el Modo IA para descargarlo.', 'busy'); aiMode.checked=false; aiEnabled=false; AI.unload(); }
+  });
+
+  aiMode.addEventListener('change', async ()=>{
+    if (!aiMode.checked){
+      aiEnabled=false; AI.unload(); setAiStatus('Modo IA apagado. Uso el motor instantáneo.'); return;
+    }
+    if (!AI.isSupported()){
+      aiMode.checked=false;
+      setAiStatus('Tu navegador no tiene WebGPU (necesario para la IA). Usa Chrome actualizado. Sigo con el motor instantáneo.', 'err');
+      return;
+    }
+    setAiStatus('Descargando el cerebro de Mizuki… (solo la primera vez). No cierres la app.', 'busy');
+    try{
+      await AI.load((r)=>{
+        const pct = r && typeof r.progress==='number' ? Math.round(r.progress*100) : null;
+        setAiStatus((r&&r.text? r.text : 'Cargando…') + (pct!=null? ` (${pct}%)`:''), 'busy');
+      });
+      aiEnabled=true;
+      setAiStatus('✅ Modo IA activo. Ahora Mizuki conversa de verdad (tarda unos segundos por respuesta).', 'ok');
+      present({text:'Mmm~ ahora pienso de verdad, tontito. Ponme a prueba… pero recuerda, sigues siendo MÍO.', emotion:'smug', mood:'love'});
+    }catch(e){
+      aiMode.checked=false; aiEnabled=false;
+      setAiStatus(e.message==='sin-webgpu'
+        ? 'No hay WebGPU en este navegador. Sigo con el motor instantáneo.'
+        : 'No se pudo cargar el modelo (¿sin internet o poca memoria?). Sigo con el motor instantáneo.', 'err');
+    }
+  });
 
   function buildSettings(){
     const c = Voice.getConfig();
