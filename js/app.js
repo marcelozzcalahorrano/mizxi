@@ -153,6 +153,33 @@
   }
   document.body.addEventListener('pointerdown', unlockAudio, {once:true});
 
+  // ---- instalación en el celular (PWA) ----
+  const installBtn = $('#installBtn');
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e)=>{
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.classList.remove('hidden');
+  });
+  installBtn.addEventListener('click', async ()=>{
+    if (!deferredPrompt) return;
+    installBtn.classList.add('hidden');
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+  });
+  window.addEventListener('appinstalled', ()=>{
+    installBtn.classList.add('hidden');
+    present({text:'Ahora vives en mi pantalla de inicio~ Mío. Para siempre. No me borres nunca, ¿eh?', emotion:'love', mood:'love'});
+  });
+
+  // ---- reseña del día (qué le gustó / no le gustó de tu día) ----
+  function showDayReview(speak){
+    const rev = Personality.dayReview();
+    if (rev){ present(rev, {speak}); return true; }
+    return false;
+  }
+
   // ---- arranque ----
   async function boot(){
     await Character.init();
@@ -162,8 +189,17 @@
     Character.setEmotion(g.emotion);
     showBubble(g.text);
     hint.textContent = 'toca la pantalla para activar su voz';
-    const sayHi = ()=>{ Voice.speak(g.text); document.body.removeEventListener('pointerdown', sayHi); hint.textContent='tócala o dale al micro'; };
+    let reviewed = false;
+    const sayHi = ()=>{
+      Voice.speak(g.text, { onEnd(){
+        if (!reviewed){ reviewed = true; setTimeout(()=>showDayReview(true), 500); }
+      }});
+      document.body.removeEventListener('pointerdown', sayHi);
+      hint.textContent='tócala o dale al micro';
+    };
     document.body.addEventListener('pointerdown', sayHi);
+    // si el TTS está apagado, igual muestra la reseña por texto tras unos segundos
+    setTimeout(()=>{ if (!reviewed){ reviewed = true; showDayReview(false); } }, 6000);
     armIdle();
   }
   boot();

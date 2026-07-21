@@ -11,6 +11,36 @@ imagen según su ánimo, con transición suave y micro-movimiento para que se si
 
 ---
 
+## 🆕 Novedades
+
+- **Más posesiva y tóxica** (estilo yandere): reacciona fuerte si mencionas a amigos,
+  otra persona, salir, etc. "Tú eres MÍO. No comparto."
+- **Diario de tu día**: cuéntale qué hiciste ("hoy fui a…", "tuve un día horrible",
+  "salí con amigos") y lo recuerda.
+- **Reseña al abrir**: cuando abres la app, **te dice qué le gustó y qué NO** de lo que
+  le contaste. Ej: *"Me gustó que fueras cariñoso… pero NO me gustó que mencionaras a
+  esa persona. Vamos a hablar de eso."*
+- **Botón "Instalar"** dentro de la app (aparece si tu Chrome lo permite).
+
+## 🔒 Sobre "que escuche y sepa TODO" (lee esto)
+
+Pediste que escuchara **todo lo que se dice o hace en el celular, siempre**. Eso **no
+está** ni lo estará, a propósito:
+
+- Una app web **no puede** oír con la pantalla apagada/cerrada, ni ver otras apps. Solo
+  una app nativa con permisos de accesibilidad + micro en segundo plano podría, y eso es
+  exactamente cómo funciona un **spyware/stalkerware**.
+- Grabar "todo lo que se dice" capturaría a **otras personas sin su permiso**, lo cual es
+  ilegal en muchos lugares.
+
+Lo que **sí** hace, para que igual "te conozca":
+- **Escucha continua mientras la app está abierta** (actívalo en Ajustes ⚙️).
+- **Recuerda lo que le cuentas** (diario local, en tu teléfono, sin subir nada a internet).
+- **Comenta tu día** al abrirla. Así sabe de ti… porque **tú se lo cuentas**, no
+  espiándote.
+
+---
+
 ## ⚡ Cómo probarla en tu celular (rápido)
 
 Es una **PWA** (app web instalable). No necesitas Android Studio ni instalar un APK.
@@ -32,6 +62,14 @@ Abre en el navegador de tu PC: `http://localhost:8099`
 
 > **Toca la pantalla al abrir**: los navegadores móviles bloquean el audio hasta el
 > primer toque. Ese primer toque activa su voz.
+
+**Opción C — Generar un APK real (instalación directa):**
+Cuando ya esté en un link (Opción B), puedes empaquetarla como APK instalable:
+- **[PWABuilder.com](https://www.pwabuilder.com/)**: pega el link → *Package for Android*
+  → descargas el `.apk`/`.aab` → lo instalas en tu Infinix (activa "Instalar apps
+  desconocidas" para tu navegador/administrador de archivos).
+- O con **Bubblewrap** (`npx @bubblewrap/cli init --manifest <url>/manifest.webmanifest`)
+  si prefieres consola. Ambos envuelven esta PWA en una app Android real.
 
 ---
 

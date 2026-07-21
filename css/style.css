@@ -58,6 +58,13 @@ html,body{margin:0;height:100%;overflow:hidden;background:#000;color:var(--text)
 @keyframes pop{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
 .hidden{display:none!important}
 
+.install-btn{position:absolute;top:calc(env(safe-area-inset-top) + 62px);left:50%;
+  transform:translateX(-50%);z-index:8;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;
+  font-size:14px;font-weight:700;padding:10px 18px;border-radius:22px;
+  box-shadow:0 6px 20px rgba(255,93,143,.45);animation:pop .3s ease}
+.install-btn:active{transform:translateX(-50%) scale(.94)}
+
 .controls{position:absolute;left:0;right:0;
   bottom:calc(env(safe-area-inset-bottom) + 18px);
   display:flex;align-items:center;gap:10px;padding:0 16px;z-index:7}
