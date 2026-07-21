@@ -1,0 +1,40 @@
+{
+  "emotions": {
+    "neutral": "neutral.png",
+    "happy": "happy.png",
+    "smile": "smile.png",
+    "shy": "shy.png",
+    "blush": "blush.png",
+    "angry": "angry.png",
+    "pout": "pout.png",
+    "annoyed": "annoyed.png",
+    "sad": "sad.png",
+    "cry": "cry.png",
+    "love": "love.png",
+    "wink": "wink.png",
+    "smug": "smug.png",
+    "teasing": "teasing.png",
+    "surprised": "surprised.png",
+    "sleepy": "sleepy.png",
+    "bored": "bored.png",
+    "excited": "excited.png",
+    "jealous": "jealous.png",
+    "worried": "worried.png",
+    "laugh": "laugh.png",
+    "sulk": "sulk.png",
+    "curious": "curious.png",
+    "sing": "sing.png"
+  },
+  "talk": {
+    "neutral": "neutral_talk.png",
+    "happy": "happy_talk.png",
+    "angry": "angry_talk.png",
+    "shy": "shy_talk.png",
+    "smug": "smug_talk.png",
+    "teasing": "teasing_talk.png",
+    "sad": "sad_talk.png",
+    "excited": "excited_talk.png"
+  },
+  "default": "neutral",
+  "count": 32
+}
