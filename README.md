@@ -73,20 +73,31 @@ Cuando ya esté en un link (Opción B), puedes empaquetarla como APK instalable:
 
 ---
 
-## 🔊 Que funcione 100% offline (importante)
+## 🔊 La voz (que no suene robótica)
 
-- **La voz (TTS)** usa la voz del sistema de Android. Para que **no necesite internet**:
-  `Ajustes de Android → Sistema → Idiomas → Salida de texto a voz` → elige el motor
-  (Google) → **descarga la voz en Español**. Una vez descargada, habla sin datos.
-  En **Ajustes** de la app puedes elegir la voz y subir el **Tono** para que suene
-  agudita y "anime" (más cerca del vibe Nami/Robin).
+Tienes **dos voces** (⚙️ Ajustes):
+
+**1) 🎙️ Voz natural (recomendada)** — una **voz neuronal femenina** en español
+(Piper/VITS en el navegador). Suena a **persona**, no a robot. Actívala en Ajustes →
+**🎙️ Voz natural**:
+- Se **descarga una vez** (con internet, ~25 MB) y luego funciona **offline**.
+- Voces: **Daniela** (Argentina, dulce · por defecto), **Sharvard** (España),
+  **Claude** (México).
+- Da **lip-sync real**: la boca se mueve con la energía real del audio.
+- Si no carga (sin internet / navegador viejo), vuelve sola a la voz del sistema.
+
+**2) Voz del sistema (respaldo)** — el TTS de Android, 100% offline pero más robótico.
+Para que no use datos: `Ajustes de Android → Salida de texto a voz` → motor de Google →
+**descarga la voz en Español** (elige una "network/natural" si aparece). En la app puedes
+ajustar **Tono** y **Velocidad**.
+
 - **La escucha (STT)**: el reconocimiento de voz de Chrome a veces usa servidores de
-  Google. Para dictado **100% offline** hay que integrar **Vosk** (ver más abajo).
+  Google. Para dictado **100% offline** se puede integrar **Vosk** (ver más abajo).
   Mientras tanto, siempre puedes **escribirle** y ella te responde por voz.
 
 ---
 
-## 🎭 El repositorio de sprites (24 emociones)
+## 🎭 El repositorio de sprites (24 emociones, estilo anime)
 
 Están en `/sprites`. El archivo `sprites/manifest.json` mapea cada emoción a su PNG:
 

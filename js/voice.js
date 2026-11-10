@@ -14,15 +14,20 @@ const Voice = (() => {
   const synth = window.speechSynthesis;
   let voices = [];
   let selected = null;
-  let cfg = { pitch: 1.6, rate: 1.02, volume: 1, ttsOn: true, lang: 'es' };
+  let cfg = { pitch: 1.35, rate: 1.0, volume: 1, ttsOn: true, lang: 'es',
+              natural: false };
+  try{ Object.assign(cfg, JSON.parse(localStorage.getItem('mizuki_voicecfg')||'{}')); }catch(e){}
+  function persistCfg(){ try{ localStorage.setItem('mizuki_voicecfg', JSON.stringify(cfg)); }catch(e){} }
 
   // ---- selección de voz ----
   function refreshVoices(){
     voices = synth ? synth.getVoices() : [];
-    // preferimos español y, si se puede, voz femenina
     const es = voices.filter(v=>/es(-|_|$)/i.test(v.lang));
-    const female = es.find(v=>/female|mujer|mónica|monica|paulina|helena|sabina|laura|lucia|marisol/i.test(v.name));
-    selected = female || es[0] || voices[0] || null;
+    // preferimos voces "network" (de Google, más naturales) y nombres femeninos
+    const fem = /female|mujer|monica|mónica|paulina|helena|sabina|laura|lucia|lucía|marisol|elvira|conchita|penelope|penélope|eed|sfb/i;
+    const net = es.filter(v=>/network|online|natural|neural/i.test(v.name));
+    selected = net.find(v=>fem.test(v.name)) || net[0]
+            || es.find(v=>fem.test(v.name)) || es[0] || voices[0] || null;
     const saved = localStorage.getItem('mizuki_voice');
     if (saved){ const s = voices.find(v=>v.name===saved); if (s) selected = s; }
     return voices;
@@ -33,7 +38,7 @@ const Voice = (() => {
     const v = voices.find(x=>x.name===name);
     if (v){ selected = v; localStorage.setItem('mizuki_voice', name); }
   }
-  function setConfig(c){ Object.assign(cfg, c); }
+  function setConfig(c){ Object.assign(cfg, c); persistCfg(); }
   function getConfig(){ return {...cfg}; }
   function getVoices(){ return voices; }
   function currentVoice(){ return selected; }
@@ -68,29 +73,88 @@ const Voice = (() => {
     Character.setMouth(0); Character.setTalking(false);
   }
 
+  // ---- reproducción de voz NATURAL (WAV) con lip-sync REAL vía Web Audio ----
+  let audioCtx = null, curAudio = null;
+  function getCtx(){
+    if (!audioCtx){ try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+    if (audioCtx && audioCtx.state === 'suspended'){ audioCtx.resume().catch(()=>{}); }
+    return audioCtx;
+  }
+  async function speakNaturalBlob(blob, opts){
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.preload = 'auto';
+    curAudio = audio;
+    const ctx = getCtx();
+    let analyser = null, data = null, src = null;
+    if (ctx){
+      try{
+        src = ctx.createMediaElementSource(audio);
+        analyser = ctx.createAnalyser(); analyser.fftSize = 512;
+        data = new Uint8Array(analyser.fftSize);
+        src.connect(analyser); analyser.connect(ctx.destination);
+      }catch(e){ analyser = null; }
+    }
+    Character.setTalking(true);
+    const step = () => {
+      if (analyser){
+        analyser.getByteTimeDomainData(data);
+        let sum = 0;
+        for (let i=0;i<data.length;i++){ const v=(data[i]-128)/128; sum += v*v; }
+        const rms = Math.sqrt(sum/data.length);         // energía real del audio
+        Character.setMouth(Math.min(1, rms*3.2));
+      } else {
+        Character.setMouth(0.4 + Math.random()*0.4);     // respaldo
+      }
+      lipRAF = requestAnimationFrame(step);
+    };
+    return new Promise((resolve)=>{
+      audio.onplay = () => { speaking = true; opts.onStart && opts.onStart(); lipRAF = requestAnimationFrame(step); };
+      const done = () => { speaking = false; stopLip(); URL.revokeObjectURL(url); curAudio = null; opts.onEnd && opts.onEnd(); resolve(); };
+      audio.onended = done; audio.onerror = done;
+      audio.play().catch(done);
+    });
+  }
+
   // ---- hablar ----
   let speaking = false;
   function speak(text, opts={}){
     const say = speakable(text);
-    if (!cfg.ttsOn || !synth || !say){
-      // igual movemos la boca un poco para dar vida
+    if (!cfg.ttsOn || !say){
       startLip(); setTimeout(stopLip, Math.min(2500, 400+say.length*45));
       opts.onEnd && opts.onEnd();
       return;
     }
+    // 1) Voz natural (neuronal) si está activa y lista
+    if (cfg.natural && typeof NaturalTTS !== 'undefined' && NaturalTTS.isReady()){
+      try{ synth && synth.cancel(); }catch(e){}
+      NaturalTTS.synth(say)
+        .then(blob => speakNaturalBlob(blob, opts))
+        .catch(() => speakSystem(say, opts));   // si falla, TTS del sistema
+      return;
+    }
+    // 2) TTS del sistema
+    speakSystem(say, opts);
+  }
+
+  function speakSystem(say, opts){
+    if (!synth){ opts.onEnd && opts.onEnd(); return; }
     try{ synth.cancel(); }catch(e){}
     const u = new SpeechSynthesisUtterance(say);
     if (selected) u.voice = selected;
     u.lang = (selected && selected.lang) || 'es-ES';
     u.pitch = cfg.pitch; u.rate = cfg.rate; u.volume = cfg.volume;
-
     u.onstart = () => { speaking = true; startLip(); opts.onStart && opts.onStart(); };
     u.onboundary = () => { Character.setMouth(0.55 + Math.random()*0.45); };
     u.onend = () => { speaking = false; stopLip(); opts.onEnd && opts.onEnd(); };
     u.onerror = () => { speaking = false; stopLip(); opts.onEnd && opts.onEnd(); };
     synth.speak(u);
   }
-  function stopSpeaking(){ try{ synth.cancel(); }catch(e){} stopLip(); speaking=false; }
+  function stopSpeaking(){
+    try{ synth && synth.cancel(); }catch(e){}
+    try{ if (curAudio){ curAudio.pause(); curAudio.currentTime = 0; curAudio = null; } }catch(e){}
+    stopLip(); speaking=false;
+  }
 
   // ---- escuchar (STT) ----
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;

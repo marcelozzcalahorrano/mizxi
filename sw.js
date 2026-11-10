@@ -1,7 +1,7 @@
 /* sw.js — Service Worker: cachea todo para funcionar OFFLINE.
-   Nota: el Modo IA (WebLLM) se descarga desde su CDN y gestiona su propio
-   cache del modelo; por eso no lo incluimos aqui. */
-const CACHE = 'mizuki-v2';
+   Nota: el Modo IA (WebLLM) y la voz natural (VITS/Piper) se descargan desde su
+   CDN y gestionan su propio cache del modelo; por eso no se incluyen aqui. */
+const CACHE = 'mizuki-v3';
 const ASSETS = [
   "./",
   "index.html",
@@ -9,6 +9,7 @@ const ASSETS = [
   "js/character.js",
   "js/personality.js",
   "js/ai.js",
+  "js/tts_natural.js",
   "js/voice.js",
   "js/app.js",
   "manifest.webmanifest",
@@ -49,27 +50,15 @@ const ASSETS = [
   "sprites/worried.png",
   "sprites/manifest.json"
 ];
-
-self.addEventListener('install', e => {
-  self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(()=>{}));
-});
+self.addEventListener('install', e => { self.skipWaiting();
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(()=>{})); });
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(ks =>
-    Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))));
-  self.clients.claim();
-});
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
+  self.clients.claim(); });
 self.addEventListener('fetch', e => {
-  const req = e.request;
-  if (req.method !== 'GET') return;
-  const url = new URL(req.url);
-  // solo gestionamos peticiones de nuestro propio origen; la IA (CDN) pasa directo
-  if (url.origin !== location.origin) return;
-  e.respondWith(
-    caches.match(req).then(hit => hit || fetch(req).then(res => {
-      const copy = res.clone();
-      caches.open(CACHE).then(c => c.put(req, copy)).catch(()=>{});
-      return res;
-    }).catch(() => caches.match('index.html')))
-  );
+  const req = e.request; if (req.method !== 'GET') return;
+  const url = new URL(req.url); if (url.origin !== location.origin) return;
+  e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
+    const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)).catch(()=>{});
+    return res; }).catch(() => caches.match('index.html'))));
 });

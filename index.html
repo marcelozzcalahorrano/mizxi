@@ -53,7 +53,22 @@
     <!-- Panel de ajustes -->
     <div id="settings" class="settings hidden">
       <h2>Ajustes</h2>
-      <label>Voz
+      <div class="ai-box">
+        <label class="switch">
+          <input id="natMode" type="checkbox" />
+          <span>🎙️ Voz natural (más humana)</span>
+        </label>
+        <label>Voz
+          <select id="natVoice">
+            <option value="daniela" selected>Daniela — Argentina, dulce</option>
+            <option value="sharvard">Sharvard — España</option>
+            <option value="claude">Claude — México</option>
+          </select>
+        </label>
+        <div id="natStatus" class="ai-status">Reemplaza la voz robótica por una voz neuronal femenina. Se descarga una vez (con internet, ~25 MB) y luego va offline.</div>
+      </div>
+
+      <label>Voz del sistema (respaldo)
         <select id="voiceSelect"></select>
       </label>
       <label>Tono (agudo) <span id="pitchVal"></span>
@@ -95,6 +110,7 @@
   <script src="js/character.js"></script>
   <script src="js/personality.js"></script>
   <script src="js/ai.js"></script>
+  <script src="js/tts_natural.js"></script>
   <script src="js/voice.js"></script>
   <script src="js/app.js"></script>
   <script>

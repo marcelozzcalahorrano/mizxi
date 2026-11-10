@@ -190,6 +190,38 @@
   rate.addEventListener('input',()=>{ Voice.setConfig({rate:+rate.value}); rateVal.textContent=(+rate.value).toFixed(2); });
   ttsOn.addEventListener('change',()=>Voice.setConfig({ttsOn:ttsOn.checked}));
   voiceSelect.addEventListener('change',()=>Voice.setVoiceByName(voiceSelect.value));
+
+  // ---- voz natural (neuronal) ----
+  const natMode=$('#natMode'), natVoice=$('#natVoice'), natStatus=$('#natStatus');
+  function setNatStatus(m,c){ natStatus.textContent=m; natStatus.className='ai-status'+(c?' '+c:''); }
+  // reflejar estado guardado
+  try{ natVoice.value = localStorage.getItem('mizuki_nat_voice')||'daniela'; }catch(e){}
+  natMode.checked = !!Voice.getConfig().natural;
+  if (natMode.checked) setNatStatus('Voz natural activada. Se cargará al primer mensaje.', 'ok');
+
+  natVoice.addEventListener('change', ()=>{
+    NaturalTTS.setVoice(natVoice.value);
+    if (Voice.getConfig().natural) setNatStatus('Cambiaste de voz. Se descargará al próximo mensaje.', 'busy');
+  });
+
+  natMode.addEventListener('change', async ()=>{
+    if (!natMode.checked){ Voice.setConfig({natural:false}); setNatStatus('Voz natural apagada. Uso la voz del sistema.'); return; }
+    if (!NaturalTTS.isSupported()){
+      natMode.checked=false; setNatStatus('Tu navegador no soporta esta voz. Uso la del sistema.', 'err'); return;
+    }
+    setNatStatus('Descargando la voz de Mizuki… (solo la primera vez). No cierres la app.', 'busy');
+    try{
+      await NaturalTTS.load((pct)=>{
+        setNatStatus('Descargando voz…' + (pct!=null? ` (${Math.round(pct*100)}%)`:''), 'busy');
+      });
+      Voice.setConfig({natural:true});
+      setNatStatus('✅ Voz natural lista. Ya no sueno robótica~', 'ok');
+      Voice.speak('¿Mejor así, tontito? Ahora sueno como tu Mizuki de verdad.');
+    }catch(e){
+      natMode.checked=false; Voice.setConfig({natural:false});
+      setNatStatus('No se pudo cargar la voz (¿sin internet?). Sigo con la del sistema.', 'err');
+    }
+  });
   $('#testVoice').addEventListener('click',()=>Voice.speak('Hola, tontito~ soy Mizuki. Solo tuya.'));
   $('#resetMemory').addEventListener('click',()=>{
     Personality.reset();
